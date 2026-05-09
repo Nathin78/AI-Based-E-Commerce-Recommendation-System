@@ -55,6 +55,17 @@ export default function ProductCard({ product, onAdd, onWishlist, serverNow, wis
           {product.flashSale ? <Chip color="error" label="FLASH" size="small" /> : null}
         </Stack>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{product.brand || "Generic"}</Typography>
+        <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mt: 0.7 }}>
+          <Chip
+            label={`${product.ratingSummary?.average || "0.0"} ★`}
+            size="small"
+            color={product.ratingSummary?.count ? "success" : "default"}
+            variant={product.ratingSummary?.count ? "filled" : "outlined"}
+          />
+          <Typography variant="caption" color="text.secondary">
+            {product.ratingSummary?.count || 0} review{product.ratingSummary?.count === 1 ? "" : "s"}
+          </Typography>
+        </Stack>
         <Typography
           variant="body2"
           color="text.secondary"

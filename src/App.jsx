@@ -16,6 +16,9 @@ import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import WishlistPage from "./pages/WishlistPage";
 import LandingPage from "./pages/LandingPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
+import ProfilePage from "./pages/ProfilePage";
 import socket from "./services/socket";
 
 function App() {
@@ -64,8 +67,11 @@ function App() {
           <Route path="/register" element={isAuthenticated ? <Navigate to={authenticatedHome} replace /> : <RegisterPage />} />
           <Route path="/auth" element={isAuthenticated ? <Navigate to={authenticatedHome} replace /> : <AuthPage />} />
           <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+          <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/wishlist" element={<ProtectedRoute><WishlistPage serverNow={serverNow} /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+          <Route path="/order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -7,8 +7,10 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Divider,
   IconButton,
   Grid,
+  MenuItem,
   Paper,
   Snackbar,
   TextField,
@@ -30,13 +32,6 @@ import { getProductImageSrc } from "../utils/productImage";
 
 const DEFAULT_SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL"];
 
-function ratingFromId(id) {
-  const val = id
-    .split("")
-    .reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  return (3.6 + (val % 13) / 10).toFixed(1);
-}
-
 export default function ProductPage({ serverNow }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,9 +40,13 @@ export default function ProductPage({ serverNow }) {
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState(DEFAULT_SIZE_OPTIONS[0]);
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState([]);
+  const [canReview, setCanReview] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const referenceImages = useMemo(
     () => (product?.referenceImages?.length ? product.referenceImages : product ? [getProductImageSrc(product.image)] : []),
@@ -87,6 +86,8 @@ export default function ProductPage({ serverNow }) {
       try {
         const { data } = await api.get(`/products/${id}`);
         setProduct(data.product);
+        setReviews(data.reviews || []);
+        setCanReview(Boolean(data.canReview));
         setSelectedImage(getProductImageSrc(data.product.image));
         setSelectedSize(data.product.sizes?.[0] || DEFAULT_SIZE_OPTIONS[0]);
       } catch (error) {
@@ -152,9 +153,11 @@ export default function ProductPage({ serverNow }) {
 
     const refreshProduct = () => {
       api
-        .get(`/products/${id}`)
+        .get(`/products/${id}?trackView=false`)
         .then(({ data }) => {
           setProduct(data.product);
+          setReviews(data.reviews || []);
+          setCanReview(Boolean(data.canReview));
           setSelectedImage((current) => current || getProductImageSrc(data.product.image));
         })
         .catch((error) => {
@@ -198,7 +201,7 @@ export default function ProductPage({ serverNow }) {
     } catch (error) {
       if (error.response?.status === 404) {
         try {
-          await api.post("/cart", { productId: product.id, quantity, action: "add" });
+          await api.post("/cart", { productId: product.id, quantity, action: "add", size: selectedSize });
           await api.post("/orders");
           setMessage("Order placed successfully");
           navigate("/orders", { state: { message: "Order placed successfully" } });
@@ -210,6 +213,27 @@ export default function ProductPage({ serverNow }) {
       }
 
       setMessage(error.response?.data?.message || "Purchase failed");
+    }
+  };
+
+  const submitReview = async () => {
+    if (!isAuthenticated) {
+      setMessage("Please login to write a review");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    try {
+      const { data } = await api.post(`/products/${product.id}/reviews`, reviewForm);
+      setProduct(data.product);
+      setReviews(data.reviews || []);
+      setReviewForm((prev) => ({ ...prev, comment: "" }));
+      setCanReview(true);
+      setMessage("Review saved successfully");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Unable to save review");
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -279,14 +303,16 @@ export default function ProductPage({ serverNow }) {
 
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
             <Chip
-              label={ratingFromId(product.id)}
+              label={`${product.ratingSummary?.average || "0.0"} ★`}
               size="small"
               sx={{
                 bgcolor: theme.palette.text.primary,
                 color: theme.palette.background.default
               }}
             />
-            <Typography sx={{ color: "text.secondary" }}>107 Ratings</Typography>
+            <Typography sx={{ color: "text.secondary" }}>
+              {product.ratingSummary?.count || 0} review{product.ratingSummary?.count === 1 ? "" : "s"}
+            </Typography>
           </Stack>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "flex-start", sm: "center" }} sx={{ mb: 1 }}>
@@ -411,6 +437,79 @@ export default function ProductPage({ serverNow }) {
               Buy at {inr(quantityTotal)}
             </Button>
           </Stack>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={5}>
+          <Paper sx={{ p: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, height: "100%" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Ratings & Reviews</Typography>
+            <Typography sx={{ mt: 1, fontSize: 34, fontWeight: 900 }}>
+              {product.ratingSummary?.average || "0.0"} / 5
+            </Typography>
+            <Typography color="text.secondary">
+              Based on {product.ratingSummary?.count || 0} verified review{product.ratingSummary?.count === 1 ? "" : "s"}.
+            </Typography>
+
+            {isAuthenticated ? (
+              <Stack spacing={1.5} sx={{ mt: 2 }}>
+                <Typography sx={{ fontWeight: 700 }}>
+                  {canReview ? "Share your experience" : "Review unlocks after purchase"}
+                </Typography>
+                <TextField
+                  select
+                  label="Rating"
+                  value={reviewForm.rating}
+                  onChange={(event) => setReviewForm((prev) => ({ ...prev, rating: Number(event.target.value) }))}
+                  disabled={!canReview || reviewSubmitting}
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <MenuItem key={value} value={value}>{value} Star{value === 1 ? "" : "s"}</MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  label="Review"
+                  multiline
+                  minRows={4}
+                  value={reviewForm.comment}
+                  onChange={(event) => setReviewForm((prev) => ({ ...prev, comment: event.target.value }))}
+                  disabled={!canReview || reviewSubmitting}
+                  helperText={canReview ? "Your latest review updates your previous one." : "Place an order for this item to leave a review."}
+                />
+                <Button variant="contained" onClick={submitReview} disabled={!canReview || reviewSubmitting || !reviewForm.comment.trim()}>
+                  {reviewSubmitting ? "Saving..." : "Submit Review"}
+                </Button>
+              </Stack>
+            ) : (
+              <Alert sx={{ mt: 2 }} severity="info">Login to see whether you can review this product.</Alert>
+            )}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={7}>
+          <Paper sx={{ p: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, height: "100%" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5 }}>What shoppers are saying</Typography>
+            {!reviews.length ? (
+              <Alert severity="info">No reviews yet. Be the first verified buyer to rate this product.</Alert>
+            ) : (
+              <Stack divider={<Divider flexItem />} spacing={1.5}>
+                {reviews.map((review) => (
+                  <Box key={review.id} sx={{ py: 0.5 }}>
+                    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={0.8}>
+                      <Typography sx={{ fontWeight: 700 }}>
+                        {review.userId === user?.id ? "You" : review.userName || "Verified Buyer"}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {new Date(review.updatedAt || review.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </Stack>
+                    <Typography sx={{ fontWeight: 700, mt: 0.5 }}>{review.rating} / 5</Typography>
+                    <Typography sx={{ color: "text.secondary", mt: 0.5 }}>{review.comment}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Paper>
         </Grid>
       </Grid>
 

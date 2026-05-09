@@ -102,6 +102,21 @@ export default function AdminDashboard() {
     [flashSales]
   );
 
+  const revenueSummary = useMemo(() => {
+    return orders.reduce(
+      (summary, order) => {
+        summary.subtotal += Number(order.subtotal || order.total || 0);
+        summary.discount += Number(order.discount || 0);
+        summary.total += Number(order.total || 0);
+        if (order.appliedCoupon?.code) {
+          summary.couponUsage[order.appliedCoupon.code] = (summary.couponUsage[order.appliedCoupon.code] || 0) + 1;
+        }
+        return summary;
+      },
+      { subtotal: 0, discount: 0, total: 0, couponUsage: {} }
+    );
+  }, [orders]);
+
   const stats = useMemo(
     () => [
       { label: "Users", value: users.length, helper: "Registered accounts" },
@@ -147,10 +162,10 @@ export default function AdminDashboard() {
     };
 
     const onCatalogSnapshot = (snapshot) => {
-      if (Array.isArray(snapshot?.products) && snapshot.products.length) {
+      if (Array.isArray(snapshot?.products)) {
         setProducts(snapshot.products);
       }
-      if (Array.isArray(snapshot?.flashSales) && snapshot.flashSales.length) {
+      if (Array.isArray(snapshot?.flashSales)) {
         setFlashSales(snapshot.flashSales);
       }
     };
@@ -394,6 +409,27 @@ export default function AdminDashboard() {
             </Stack>
           </Paper>
 
+          <Paper sx={{ p: 2.5, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Revenue Snapshot</Typography>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Gross sales</Typography>
+                <Typography sx={{ fontWeight: 800 }}>{inr(revenueSummary.subtotal)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Discounts given</Typography>
+                <Typography sx={{ fontWeight: 800 }}>{inr(revenueSummary.discount)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Net revenue</Typography>
+                <Typography sx={{ fontWeight: 800 }}>{inr(revenueSummary.total)}</Typography>
+              </Box>
+            </Stack>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1.2 }}>
+              Coupon usage: {Object.keys(revenueSummary.couponUsage).length ? Object.entries(revenueSummary.couponUsage).map(([code, count]) => `${code} (${count})`).join(", ") : "No coupons used yet"}
+            </Typography>
+          </Paper>
+
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Paper sx={{ p: 2.5, borderRadius: 3, border: `1px solid ${theme.palette.divider}`, height: "100%" }}>
@@ -468,6 +504,9 @@ export default function AdminDashboard() {
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Stock: {product.stock} | Views: {product.views || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Rating: {product.ratingSummary?.average || "0.0"} / 5 ({product.ratingSummary?.count || 0} reviews)
                       </Typography>
                     </Stack>
                   </CardContent>
@@ -587,6 +626,14 @@ export default function AdminDashboard() {
                   <Typography variant="body2" color="text.secondary">
                     Order ID: {order.id} | Items: {order.items?.length || 0} | Date: {formatDisplayDate(order.createdAt)}
                   </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Subtotal: {inr(order.subtotal || order.total || 0)} | Discount: {inr(order.discount || 0)} | Total: {inr(order.total || 0)}
+                  </Typography>
+                  {order.appliedCoupon?.code ? (
+                    <Typography variant="body2" color="success.main">
+                      Coupon used: {order.appliedCoupon.code}
+                    </Typography>
+                  ) : null}
                   <Stack spacing={0.8}>
                     {order.items?.map((item) => (
                       <Box key={`${order.id}-${item.productId}`} sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>

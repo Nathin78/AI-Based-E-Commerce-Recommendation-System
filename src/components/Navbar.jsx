@@ -37,6 +37,7 @@ import ChairOutlinedIcon from "@mui/icons-material/ChairOutlined";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useColorMode } from "../context/ThemeModeContext";
+import ColorIconBadge from "./ColorIconBadge";
 
 export default function Navbar({ lowStockMessage }) {
   const { user, logout } = useAuth();
@@ -65,17 +66,29 @@ export default function Navbar({ lowStockMessage }) {
   const mainText = theme.palette.text.primary;
   const mutedText = theme.palette.text.secondary;
   const badgeBg = theme.palette.background.paper;
+  const actionButtons = {
+    logout: { icon: <PersonOutlineIcon />, palette: ["#ef4444", "#f97316"], shadow: "0 8px 18px rgba(239,68,68,0.18)" },
+    mode: {
+      icon: mode === "dark" ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />,
+      palette: mode === "dark" ? ["#f59e0b", "#fb7185"] : ["#2563eb", "#06b6d4"],
+      shadow: "0 8px 18px rgba(59,130,246,0.18)"
+    },
+    profile: { icon: <PersonOutlineIcon />, palette: ["#2563eb", "#7c3aed"], shadow: "0 8px 18px rgba(99,102,241,0.18)" },
+    wishlist: { icon: <FavoriteBorderOutlinedIcon />, palette: ["#ec4899", "#f43f5e"], shadow: "0 8px 18px rgba(236,72,153,0.18)" },
+    orders: { icon: <Inventory2OutlinedIcon />, palette: ["#14b8a6", "#10b981"], shadow: "0 8px 18px rgba(16,185,129,0.18)" },
+    cart: { icon: <ShoppingCartOutlinedIcon />, palette: ["#f97316", "#eab308"], shadow: "0 8px 18px rgba(249,115,22,0.18)" }
+  };
 
   const navItems = useMemo(
     () => [
-      { label: "For You", icon: <HomeOutlinedIcon fontSize="small" />, category: "" },
-      { label: "Fashion", icon: <CheckroomOutlinedIcon fontSize="small" />, category: "Fashion" },
-      { label: "Mobiles", icon: <SmartphoneOutlinedIcon fontSize="small" />, category: "Mobiles" },
-      { label: "Electronics", icon: <LaptopChromebookOutlinedIcon fontSize="small" />, category: "Electronics" },
-      { label: "Home", icon: <HomeOutlinedIcon fontSize="small" />, category: "Home" },
-      { label: "Sports", icon: <SportsBasketballOutlinedIcon fontSize="small" />, category: "Sports" },
-      { label: "Books", icon: <MenuBookOutlinedIcon fontSize="small" />, category: "Books" },
-      { label: "Furniture", icon: <ChairOutlinedIcon fontSize="small" />, category: "Furniture" }
+      { label: "For You", icon: <HomeOutlinedIcon fontSize="small" />, category: "", palette: ["#2563eb", "#7c3aed"] },
+      { label: "Fashion", icon: <CheckroomOutlinedIcon fontSize="small" />, category: "Fashion", palette: ["#ec4899", "#f97316"] },
+      { label: "Mobiles", icon: <SmartphoneOutlinedIcon fontSize="small" />, category: "Mobiles", palette: ["#06b6d4", "#2563eb"] },
+      { label: "Electronics", icon: <LaptopChromebookOutlinedIcon fontSize="small" />, category: "Electronics", palette: ["#4f46e5", "#0ea5e9"] },
+      { label: "Home", icon: <HomeOutlinedIcon fontSize="small" />, category: "Home", palette: ["#10b981", "#14b8a6"] },
+      { label: "Sports", icon: <SportsBasketballOutlinedIcon fontSize="small" />, category: "Sports", palette: ["#f97316", "#ef4444"] },
+      { label: "Books", icon: <MenuBookOutlinedIcon fontSize="small" />, category: "Books", palette: ["#8b5cf6", "#ec4899"] },
+      { label: "Furniture", icon: <ChairOutlinedIcon fontSize="small" />, category: "Furniture", palette: ["#f59e0b", "#84cc16"] }
     ],
     []
   );
@@ -183,7 +196,7 @@ export default function Navbar({ lowStockMessage }) {
                 </Button>
                 <Button
                   onClick={handleLogout}
-                  startIcon={<PersonOutlineIcon />}
+                  startIcon={<ColorIconBadge icon={actionButtons.logout.icon} palette={actionButtons.logout.palette} size={28} iconSize={15} shadow={actionButtons.logout.shadow} />}
                   sx={{ color: mainText, px: { xs: 1, md: 1.5 } }}
                 >
                   Logout
@@ -327,17 +340,22 @@ export default function Navbar({ lowStockMessage }) {
                   </Button>
                 </>
               ) : (
-                <Button onClick={handleLogout} startIcon={<PersonOutlineIcon />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>
+                <Button onClick={handleLogout} startIcon={<ColorIconBadge icon={actionButtons.logout.icon} palette={actionButtons.logout.palette} size={28} iconSize={15} shadow={actionButtons.logout.shadow} />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>
                   Logout
                 </Button>
               )}
               <Button
                 onClick={toggleMode}
-                startIcon={mode === "dark" ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
+                startIcon={<ColorIconBadge icon={actionButtons.mode.icon} palette={actionButtons.mode.palette} size={28} iconSize={15} shadow={actionButtons.mode.shadow} />}
                 sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}
               >
                 {mode === "dark" ? "Light" : "Dark"}
               </Button>
+              {user ? (
+                <Button component={Link} to="/profile" startIcon={<ColorIconBadge icon={actionButtons.profile.icon} palette={actionButtons.profile.palette} size={28} iconSize={15} shadow={actionButtons.profile.shadow} />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>
+                  Profile
+                </Button>
+              ) : null}
               <Button
                 onClick={openMoreMenu}
                 endIcon={<ExpandMoreIcon />}
@@ -345,9 +363,9 @@ export default function Navbar({ lowStockMessage }) {
               >
                 More
               </Button>
-              <Button component={Link} to="/wishlist" startIcon={<FavoriteBorderOutlinedIcon />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Wishlist</Button>
-              <Button component={Link} to="/orders" startIcon={<Inventory2OutlinedIcon />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Orders</Button>
-              <Button component={Link} to="/cart" startIcon={<ShoppingCartOutlinedIcon />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Cart</Button>
+              <Button component={Link} to="/wishlist" startIcon={<ColorIconBadge icon={actionButtons.wishlist.icon} palette={actionButtons.wishlist.palette} size={28} iconSize={15} shadow={actionButtons.wishlist.shadow} />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Wishlist</Button>
+              <Button component={Link} to="/orders" startIcon={<ColorIconBadge icon={actionButtons.orders.icon} palette={actionButtons.orders.palette} size={28} iconSize={15} shadow={actionButtons.orders.shadow} />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Orders</Button>
+              <Button component={Link} to="/cart" startIcon={<ColorIconBadge icon={actionButtons.cart.icon} palette={actionButtons.cart.palette} size={28} iconSize={15} shadow={actionButtons.cart.shadow} />} sx={{ color: mainText, minWidth: { xs: 0, md: "auto" }, px: { xs: 0.8, md: 1.5 } }}>Cart</Button>
             </Stack>
           </Stack>
           <Menu
@@ -360,6 +378,7 @@ export default function Navbar({ lowStockMessage }) {
             <MenuItem onClick={() => goTo("/shop")}>Shop Home</MenuItem>
             <MenuItem onClick={() => goTo("/")}>Landing Page</MenuItem>
             <MenuItem onClick={() => goTo("/wishlist")}>Wishlist</MenuItem>
+            {user ? <MenuItem onClick={() => goTo("/profile")}>Profile</MenuItem> : null}
             <MenuItem onClick={() => goTo("/orders")}>Orders</MenuItem>
             <MenuItem onClick={() => goTo("/cart")}>Cart</MenuItem>
             {user?.role === "admin" ? <MenuItem onClick={() => goTo("/admin")}>Admin Dashboard</MenuItem> : null}
@@ -393,11 +412,11 @@ export default function Navbar({ lowStockMessage }) {
 
           <Stack direction="row" spacing={1.2} sx={{ mt: 1.3, overflowX: "auto", pb: 0.5, "&::-webkit-scrollbar": { display: "none" } }}>
             {navItems.map((item) => (
-              <Box
-                key={item.label}
-                onClick={() => navigate(item.category ? `/shop?category=${encodeURIComponent(item.category)}` : "/shop")}
-                sx={{
-                  minWidth: { xs: 72, sm: 90 },
+                <Box
+                  key={item.label}
+                  onClick={() => navigate(item.category ? `/shop?category=${encodeURIComponent(item.category)}` : "/shop")}
+                  sx={{
+                  minWidth: { xs: 78, sm: 96 },
                   textAlign: "center",
                   cursor: "pointer",
                   borderBottom:
@@ -407,7 +426,15 @@ export default function Navbar({ lowStockMessage }) {
                   pb: 0.7
                 }}
               >
-                <Box sx={{ display: "grid", placeItems: "center", mb: 0.2, color: item.category ? infoAccent : secondaryAccent }}>{item.icon}</Box>
+                <Box sx={{ display: "grid", placeItems: "center", mb: 0.55 }}>
+                  <ColorIconBadge
+                    icon={item.icon}
+                    palette={item.palette}
+                    size={38}
+                    iconSize={18}
+                    shadow={theme.palette.mode === "dark" ? "0 10px 20px rgba(15,23,42,0.42)" : "0 10px 22px rgba(59,130,246,0.16)"}
+                  />
+                </Box>
                 <Typography sx={{ fontWeight: 600, fontSize: { xs: 12, sm: 13 }, color: mainText }}>{item.label}</Typography>
               </Box>
             ))}

@@ -8,6 +8,12 @@ import socket from "../services/socket";
 import { useAuth } from "../context/AuthContext";
 import { inr } from "../utils/currency";
 import { useTheme } from "@mui/material/styles";
+import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
+import BoltOutlinedIcon from "@mui/icons-material/BoltOutlined";
+import ColorIconBadge from "../components/ColorIconBadge";
 
 const topBanners = [
   {
@@ -183,7 +189,7 @@ export default function HomePage({ serverNow }) {
     };
 
     const onCatalogSnapshot = (snapshot) => {
-      if (Array.isArray(snapshot?.products) && snapshot.products.length) {
+      if (Array.isArray(snapshot?.products)) {
         setProducts(dedupeById(snapshot.products));
       }
     };
@@ -328,7 +334,10 @@ export default function HomePage({ serverNow }) {
       </Grid>
 
       <Paper sx={{ p: 1.8, borderRadius: 2, mb: 2.2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.3 }}>Live Store Feed</Typography>
+        <Stack direction="row" spacing={1.1} alignItems="center" sx={{ mb: 1.3 }}>
+          <ColorIconBadge icon={<InsightsOutlinedIcon />} palette={["#0ea5e9", "#2563eb"]} />
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Live Store Feed</Typography>
+        </Stack>
         {!liveEvents.length ? (
           <Typography color="text.secondary">Waiting for live stock and order updates...</Typography>
         ) : (
@@ -343,7 +352,10 @@ export default function HomePage({ serverNow }) {
       </Paper>
 
       <Paper sx={{ p: 1.8, borderRadius: 2, mb: 2.2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.3 }}>Today's Hot Pick</Typography>
+        <Stack direction="row" spacing={1.1} alignItems="center" sx={{ mb: 1.3 }}>
+          <ColorIconBadge icon={<WhatshotOutlinedIcon />} palette={["#ef4444", "#f59e0b"]} />
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Today's Hot Pick</Typography>
+        </Stack>
         <Grid container spacing={1.5}>
           {flashProducts.length ? flashProducts.map((product) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -364,9 +376,12 @@ export default function HomePage({ serverNow }) {
           border: `1px solid ${theme.palette.divider}`
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 900, mb: 1.3, fontSize: { xs: 26, sm: 30 } }}>
-          Shop for a Cool Summer {selectedCategory ? `• ${selectedCategory}` : ""}
-        </Typography>
+        <Stack direction="row" spacing={1.1} alignItems="center" sx={{ mb: 1.3 }}>
+          <ColorIconBadge icon={<LocalMallOutlinedIcon />} palette={["#8b5cf6", "#ec4899"]} size={42} />
+          <Typography variant="h5" sx={{ fontWeight: 900, fontSize: { xs: 26, sm: 30 } }}>
+            Shop for a Cool Summer {selectedCategory ? `• ${selectedCategory}` : ""}
+          </Typography>
+        </Stack>
         <Grid container spacing={1.5}>
           {trendingProducts.length ? trendingProducts.map((product) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -380,7 +395,10 @@ export default function HomePage({ serverNow }) {
 
       {isAuthenticated && visibleRecommendations.length ? (
         <Paper sx={{ p: 1.8, borderRadius: 2, mb: 2.2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.3 }}>Recommended For You</Typography>
+          <Stack direction="row" spacing={1.1} alignItems="center" sx={{ mb: 1.3 }}>
+            <ColorIconBadge icon={<AutoAwesomeOutlinedIcon />} palette={["#7c3aed", "#06b6d4"]} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Recommended For You</Typography>
+          </Stack>
           <Grid container spacing={1.5}>
             {visibleRecommendations.map((product) => (
               <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -392,7 +410,10 @@ export default function HomePage({ serverNow }) {
       ) : null}
 
       <Paper variant="outlined" sx={{ p: 1.8, borderRadius: 2, bgcolor: theme.palette.background.paper }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Live Activity</Typography>
+        <Stack direction="row" spacing={1.1} alignItems="center" sx={{ mb: 1 }}>
+          <ColorIconBadge icon={<BoltOutlinedIcon />} palette={["#10b981", "#14b8a6"]} />
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Live Activity</Typography>
+        </Stack>
         {!activity.length ? (
           <Typography color="text.secondary">Waiting for live purchases...</Typography>
         ) : (

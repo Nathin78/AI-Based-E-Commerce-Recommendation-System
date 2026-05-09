@@ -47,6 +47,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(nextUser));
   };
 
+  const updateAuthUser = (nextUser, nextToken = token) => {
+    setUser(nextUser);
+    localStorage.setItem("user", JSON.stringify(nextUser));
+    if (nextToken) {
+      setToken(nextToken);
+      localStorage.setItem("token", nextToken);
+    }
+  };
+
   const logout = () => {
     setToken("");
     setUser(null);
@@ -55,7 +64,7 @@ export function AuthProvider({ children }) {
   };
 
   const value = useMemo(
-    () => ({ token, user, login, logout, isAuthenticated: Boolean(token) }),
+    () => ({ token, user, login, logout, updateAuthUser, isAuthenticated: Boolean(token) }),
     [token, user]
   );
 
