@@ -142,7 +142,6 @@ On Windows PowerShell, if the `npm` shim is blocked by execution policy, use the
 ```powershell
 & "C:\Program Files\nodejs\npm.cmd" test
 ```
-
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:5000`
 
@@ -156,5 +155,4 @@ On Windows PowerShell, if the `npm` shim is blocked by execution policy, use the
 - Data is also mirrored to `db.json` when `PERSIST_TO_FILE=true`.
 - Backend CORS now allows both `http://localhost:3000` and `http://localhost:5173` by default, and also accepts comma-separated `CLIENT_URL` values.
 - Seeded coupon codes: `SAVE10`, `FLASH500`, `MEGA15`.
-- Reviews are limited to users who have already purchased the product.
 - System flash sales now auto-refresh once per day and are regenerated automatically when the backend is running.
